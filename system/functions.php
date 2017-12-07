@@ -38,23 +38,23 @@ function cf_require_controller($class_name){
 }
 
 function cf_require_view($class_name){
-    rsf_require($class_name, "view");
+    cf_require($class_name, "view");
 }
 
 function cf_require_plugin($class_name){
-    rsf_require($class_name, "plugin");
+    cf_require($class_name, "plugin");
 }
 
 
-function rsf_require_class($class_name) {
+function cf_require_class($class_name) {
     cf_require($class_name);
 }
 
-function rsf_require_template($class_name) {
+function cf_require_template($class_name) {
     cf_require($class_name,'view','phtml');
 }
 
-function rsf_require_interceptor($class_name){
+function cf_require_interceptor($class_name){
     cf_require($class_name,'interceptor');
 }
 
@@ -145,9 +145,10 @@ function get_real_class_name($class_name, $type){
 }
 
 
-function rsf_error_handler($error_no){
+function cf_error_handler($error_no, $error_info){
     if($error_no!=8) {
         //debug_print_backtrace();
+        echo $error_info;
     }
 }
 

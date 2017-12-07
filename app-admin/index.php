@@ -16,6 +16,7 @@ define(CUR_PATH, ROOT_PATH . 'app-admin');
 
 require_once(SYS_PATH . "/functions.php");
 
+//引入文件路径
 $INCLUDE_PATH = array(
 	CUR_PATH,
 	ROOT_PATH.'app-admin',
@@ -23,15 +24,16 @@ $INCLUDE_PATH = array(
 	ROOT_PATH.'app-core'
 );
 
+//读取配置文件路径
 $CONFIG_PATH = array(
 	CUR_PATH.'/config',
 	ROOT_PATH.'app-core/config',
 	ROOT_PATH.'config',
 );
 
-rsf_require_class('RSF');
-rsf_require_class('AdminRequest');
-rsf_require_class('AdminResponse');
-RSF::get_instance()->setRequest(new AdminRequest());
-RSF::get_instance()->setResponse(new AdminResponse());
-RSF::get_instance()->run();
+cf_require_class('RSF');
+cf_require_class('AdminRequest');
+cf_require_class('AdminResponse');
+DPS::get_instance()->setRequest(new AdminRequest());
+DPS::get_instance()->setResponse(new AdminResponse());
+DPS::get_instance()->run();
