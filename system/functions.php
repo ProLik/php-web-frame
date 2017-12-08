@@ -27,6 +27,8 @@ spl_autoload_register(function ($class_name){
         }else{
             cf_require_plugin(substr($class_name, 0,-4));
         }
+    }else{
+        cf_require_class($class_name);
     }
 
 

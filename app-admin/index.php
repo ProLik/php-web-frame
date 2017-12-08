@@ -34,6 +34,6 @@ $CONFIG_PATH = array(
 cf_require_class('RSF');
 cf_require_class('AdminRequest');
 cf_require_class('AdminResponse');
-DPS::get_instance()->setRequest(new AdminRequest());
-DPS::get_instance()->setResponse(new AdminResponse());
+DPS::get_instance()->set_request(new Request());
+DPS::get_instance()->set_response(new Response());
 DPS::get_instance()->run();

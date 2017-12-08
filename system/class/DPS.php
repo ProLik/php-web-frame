@@ -11,56 +11,53 @@ class DPS
 {
     public $request;
     public $response;
-    private $debug_list = array();
-    public $debug = true;
-
+    public $debug;
     public static $instance;
 
     public function __construct()
     {
         //设置用户自定义的错误处理函数
         set_error_handler("cf_error_handler");
-        $this->debug("Tool loaded");
+        cf_require_class("DebugTool");
+        DebugTool::get_instance()->debug("DPS loaded");
     }
 
     public static function get_instance(){
         if(!self::$instance){
             self::$instance = new DPS();
+
         }
         return self::$instance;
     }
 
-    public function debug($error_str,$title='system') {
-        if($this->debug) {
-            $this->debug_list[] = array($error_str, $title);
-        }
-    }
 
     public function run(){
-        $this->debug($_SERVER, 'server');
-        $this->debug($_REQUEST, 'request');
+        cf_require_class("ConfigTool");
+
+        DebugTool::get_instance()->debug($_SERVER, 'server');
+        DebugTool::get_instance()->debug($_REQUEST, 'request');
 
         $time_start = microtime(1);
 
-        $this->debug("request");
+        DebugTool::get_instance()->debug("request");
         if(!$this->request){
             $this->request = new Request();
         }
 
-        $this->debug("response");
+        DebugTool::get_instance()->debug("response");
         if(!$this->response){
             $this->response = new Response();
         }
 
-        $this->debug("get router");
+        DebugTool::get_instance()->debug("get router");
         $url = $this->request->get_uri_path();
-        $this->debug($url);
+        DebugTool::get_instance()->debug($url);
 
-        $this->debug("get controller");
+        DebugTool::get_instance()->debug("get controller");
 
         $controller = $this->get_controller($url);
 
-        $interceptor_config = $this->get_config('interceptor','interceptor');
+        $interceptor_config = ConfigTool::get_instance()->get_config('interceptor','interceptor');
         $default_interceptor = $interceptor_config['default'];
         //默认的拦截器，所有的类都要,除了exception里
         if($default_interceptor){
@@ -74,7 +71,7 @@ class DPS
                 cf_require_interceptor($interceptor);
                 $interceptor_class = $interceptor. "Interceptor";
                 if(class_exists($interceptor_class)){
-                    $this->debug("run interceptor:".$interceptor);
+                    DebugTool::get_instance()->debug("run interceptor:".$interceptor);
                     $interceptor_obj = new $interceptor_class;
                     if($interceptor_obj->go_next()){
                         continue;
@@ -97,27 +94,43 @@ class DPS
             $interceptor_class = $interceptor . "Interceptor";
             cf_require_interceptor($interceptor_class);
             if(class_exists($interceptor_class)){
-                $this->debug("run interceptor:" . $interceptor);
+                DebugTool::get_instance()->debug("run interceptor:" . $interceptor);
                 $interceptor_obj = new $interceptor_class;
                 if($interceptor_obj->go_next()){
                     continue;
                 }else{
-                    $interceptor_obj->go_next();
+                    $interceptor_obj->broken();
                 }
             }else{
                 continue;
             }
         }
-
-        $this->debug($controller);
+        DebugTool::get_instance()->debug($controller);
 
         cf_require_controller($controller);
 
+        $controller_class = $controller . "Controller";
+        $controller_obj = new $controller_class;
+        DebugTool::get_instance()->debug("controller run");
 
+        $c_s = microtime(1);
+        $view = $controller_obj->run();
 
+        DebugTool::get_instance()->debug('Controller time coast:'.(microtime(1)-$c_s).'s');
 
+        if($view){
+            cf_require_view($view);
 
+            $view_class = $view . "View";
+            $view_obj = new $view_class;
+            DebugTool::get_instance()->debug("build html");
+            $view_obj->build_container();
+        }
 
+        DebugTool::get_instance()->debug('All time coast:'.(microtime(1)-$time_start).'s');
+        if($this->request->is_debug){
+            DebugTool::get_instance()->show_debug_message();
+        }
 
     }
 
@@ -146,21 +159,25 @@ class DPS
         return "NotFound";
     }
 
-    /**
-     * 获取指定的配置文件
-     * @param $key
-     * @param string $file
-     * @return mixed
-     */
-    public function get_config($key, $file = "common")
+
+
+    public function get_request()
     {
-        global $CONFIG_PATH;
-        foreach ($CONFIG_PATH as $k => $v){
-            $config_path = $v . "/" . $file . ".php";
-            if(file_exists($config_path)){
-                require $config_path;//why not use requireonce
-            }
-        }
-        return $config[$key];
+        return $this->request;
+    }
+
+    public function set_request($request)
+    {
+        $this->request = $request;
+    }
+
+    public function get_response()
+    {
+        return $this->response;
+    }
+
+    public function set_response($response)
+    {
+        $this->response = $response;
     }
 }
