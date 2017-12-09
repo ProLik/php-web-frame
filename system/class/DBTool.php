@@ -20,7 +20,8 @@ class DBTool
         //设置用户自定义的错误处理函数
         set_error_handler("cf_error_handler");
         cf_require_class("ConfigTool");
-        $this->debug("DbTool loaded");
+        cf_require_class("DebugTool");
+        DebugTool::get_instance()->debug("DbTool loaded");
     }
 
     public static function get_instance(){
@@ -35,11 +36,11 @@ class DBTool
         $key = md5($db_config["db"] . $db_config['host'] . $db_config['port'] . $db_config['user']);
 
         if($this->pdo_list[$key]){
-            $this->pdo_list[key];
+            return $this->pdo_list[$key];
         }
 
         $db_string = 'mysql:host=' . $db_config['host'] . ';port=' . $db_config['port'] . ';dbname=' . $db_config['db'];
-        $this->debug($db_string);
+        DebugTool::get_instance()->debug($db_string);
         try {
             $pdo  =  new PDO($db_string, $db_config['user'], $db_config['pass']);
         } catch  (PDOException $e) {
