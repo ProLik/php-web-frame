@@ -12,6 +12,11 @@ class DBTool
     private $memcache = null;
     private $redis = null;
     private $mongo_client_list = array();
+    public $cache;
+
+    const CACHE_TYPE_MEMCACHE = 1;
+    const CACHE_TYPE_REDIS = 2;
+    const CACHE_TYPE_REDIS_CLUSTER = 3;//redis 集群
 
     public static $instance;
 
@@ -65,9 +70,32 @@ class DBTool
 
         $domains = explode(":", $domain);
         $this->memcache->addServer($domains[0], intval($domain[1]));
-
+        return $this->memcache;
     }
 
+
+    public function get_redis()
+    {
+        cf_require_class("MyRedis");
+        return $this->redis ? $this->redis : new MyRedis();
+    }
+
+    public function get_cache()
+    {
+        $cache_type = ConfigTool::get_instance()->get_config("cache_type");
+        switch ($cache_type){
+            case self::CACHE_TYPE_MEMCACHE:
+                $this->cache = $this->get_memcache();
+                break;
+            case self::CACHE_TYPE_REDIS:
+                $this->cache = $this->get_redis();
+                break;
+            case self::CACHE_TYPE_REDIS_CLUSTER:
+
+                break;
+        }
+
+    }
 
 
 }
