@@ -80,7 +80,7 @@ class MyRedis implements ICache
 
     private function get_redis_config($type = "master")
     {
-        $redis_config = ConfigTool::get_instance()->get_config("redis", "common");
+        $redis_config = ConfigTool::get_instance()->get_config("redis", "database");
         return $redis_config[$type];
     }
 

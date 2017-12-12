@@ -11,6 +11,7 @@ class DBTool
     public $pdo_list;
     private $memcache = null;
     private $redis = null;
+    private $redis_cluster = null;
     private $mongo_client_list = array();
     public $cache;
 
@@ -66,7 +67,7 @@ class DBTool
         }
 
         $this->memcache = new MyMemcache();
-        $domain = ConfigTool::get_instance()->get_config("memcache");
+        $domain = ConfigTool::get_instance()->get_config("memcache", "database");
 
         $domains = explode(":", $domain);
         $this->memcache->addServer($domains[0], intval($domain[1]));
@@ -80,6 +81,11 @@ class DBTool
         return $this->redis ? $this->redis : new MyRedis();
     }
 
+    public function get_redis_cluster() {
+        cf_require_class("RedisClusterCache");
+        return $this->redis_cluster ? $this->redis_cluster : new RedisClusterCache();
+    }
+
     public function get_cache()
     {
         $cache_type = ConfigTool::get_instance()->get_config("cache_type");
@@ -91,11 +97,32 @@ class DBTool
                 $this->cache = $this->get_redis();
                 break;
             case self::CACHE_TYPE_REDIS_CLUSTER:
-
+                $this->cache = $this->get_redis_cluster();
                 break;
         }
 
     }
 
+    public function get_solr()
+    {
+        $solr_config = ConfigTool::get_instance()->get_config('solr', "database");
+        $solr_client = new SolrClient(array(
+            'hostname'=>$solr_config['hostname'],
+            'port'=>$solr_config['port']
+        ));
+        $solr_client->setServlet(SolrClient::SEARCH_SERVLET_TYPE,$solr_config['db'].'/select');
+        return $solr_client;
+    }
+
+    public function get_mongo($db) {
+        $mongodb_config_list = ConfigTool::get_instance()->get_config("mongodb", "database");
+        $uri = $mongodb_config_list[$db]['uri'];
+        if(!$this->mongo_client_list[$uri]) {
+            $this->mongo_client_list[$uri]  = new MongoDB\Driver\Manager($uri,array(
+                'readPreference'=>'secondary'
+            ));
+        }
+        return $this->mongo_client_list[$uri];
+    }
 
 }
