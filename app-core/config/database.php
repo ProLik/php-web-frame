@@ -32,3 +32,19 @@ $config['mongodb']['ucs'] = array(
     'dbname'=>'test2',
     'uri'=>'mongodb://test:123456@11:11:11:34/admin'
 );
+
+$config['db']['test']['master'] = array(
+    'host'=>'test.mysql.com',
+    'port'=>'3306',
+    'user'=>'ROOT',
+    'pass'=>'',
+    'db'=>'test'
+);
+
+$config['db']['test']['slave'] = array(
+    'host'=>'test.mysql.com',
+    'port'=>'3306',
+    'user'=>'ROOT',
+    'pass'=>'',
+    'db'=>'test'
+);
