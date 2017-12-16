@@ -181,6 +181,20 @@ abstract class CacheDao extends Dao
         return $result;
     }
 
+    public function get_single_by_where($where, $order="", $limit="1", $field="*")
+    {
+        $result = $this->get_by_where($where, $order, $limit, $field);
+        return $result;
+    }
 
+    public function get_by_id_array($id_array, $order="", $fields="*")
+    {
+        if(!$this->is_cache){
+            return parent::get_by_id_array($id_array, $order, $fields);
+        }
+        $cache = DBTool::get_instance()->get_cache();
+        $key = $this->get_pre_key() . "get_id_array" . md5(serialize($id_array) . $order . $fields);
+
+    }
 
 }
