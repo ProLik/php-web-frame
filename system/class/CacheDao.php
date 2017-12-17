@@ -162,7 +162,7 @@ abstract class CacheDao extends Dao
         $cache = DBTool::get_instance()->get_cache();
         $key = $this->get_pre_key() . "get_" . md5(serialize($where) . $order . $limit . $fields);
         $uncached = false;
-        if($this->is_updated($cache->get($key . 'save_time'))) {
+        if($this->is_updated($cache->get($key . '_save_time'))) {
             $uncached = true;
         }
 
@@ -175,7 +175,7 @@ abstract class CacheDao extends Dao
 
         if($uncached){
             $result = parent::get_by_where($where,$order,$limit,$fields);
-            $cache->set($key.'save_time',time(),$this->cache_time);
+            $cache->set($key.'_save_time',time(),$this->cache_time);
             $cache->set_array($key.'data',$result,$this->cache_time);
         }
         return $result;
@@ -193,7 +193,22 @@ abstract class CacheDao extends Dao
             return parent::get_by_id_array($id_array, $order, $fields);
         }
         $cache = DBTool::get_instance()->get_cache();
+        sort($id_array);
         $key = $this->get_pre_key() . "get_id_array" . md5(serialize($id_array) . $order . $fields);
+
+        $uncache = false;
+        if($this->is_updated($cache->get($key . "_save_time"))){
+            $uncache = true;
+        }
+        if($uncache){
+            $result =  parent::get_by_id_array($id_array, $order, $fields);
+
+            $cache->set($key . '_save_time', time(), $this->cache_time);
+            $cache->set_array($key . '_data', $result, $this->cache_time);
+        } else {
+            $result = $cache->get_array($key . "_data");
+        }
+
 
     }
 
