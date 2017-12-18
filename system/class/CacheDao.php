@@ -32,11 +32,11 @@ abstract class CacheDao extends Dao
 
     public function exeSQL($sql)
     {
-        $this->set_table_update();
+        $this->set_updated();
         return parent::exeSQL($sql);
     }
 
-    private function set_table_update()
+    private function set_updated()
     {
         $cache = DBTool::get_instance()->get_cache();
         $cache->set($this->get_pre_key(), time(), $this->cache_time);
@@ -208,8 +208,59 @@ abstract class CacheDao extends Dao
         } else {
             $result = $cache->get_array($key . "_data");
         }
-
+        return $result;
 
     }
 
+    public function clear_row_cache($id) {
+        $mem = DBTool::get_instance()->get_cache();
+        $key = $this->build_row_key($id);
+        DBTool::get_instance()->debug($key,'删除rowkey');
+        $mem->delete($key);
+    }
+
+
+    public function update_by_id($id, $data)
+    {
+        $this->clear_row_cache($id);
+        $this->set_updated();
+        return parent::update_by_id($id, $data);
+    }
+
+    public function update_by_where($where,$data,$time_no_delay = false) {
+
+        //可能出现延迟的问题,更新必须走master
+        if($time_no_delay) {
+            $tmp = $this->force_master;
+            $this->force_master = true;
+            $result = parent::get_by_where($where);
+            $this->force_master = $tmp;
+        } else {
+            $result = $this->get_by_where($where);
+        }
+        $this->set_updated();
+        foreach($result as $k=>$v) {
+            $this->update_by_id($v[$this->get_pk_id()], $data);
+        }
+    }
+
+    public function insert($data)
+    {
+        $this->set_updated();
+        parent::insert($data);
+    }
+
+    public function del_by_id($id) {
+        $this->clear_row_cache($id);
+        $this->set_updated();
+        return parent::del_by_id($id);
+    }
+
+    public function del_by_where($where) {
+        $result = $this->get_by_where($where);
+        foreach($result as $k=>$v) {
+            $this->del_by_id($v[$this->get_pk_id()]);
+        }
+        return true;
+    }
 }

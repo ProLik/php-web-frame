@@ -231,9 +231,29 @@ abstract class Dao
         return false;
     }
 
+    public function update_by_id($id,$data) {
+        if (empty($data) || !is_array($data)) {
+            return false;
+        }
+
+        $set_string = "";
+        $set_data = array();
+        foreach ($data as $k => $v) {
+            $set_string .= ",`$k`=?";
+            $set_data[] = $v;
+        }
+        $set_string = substr($set_string, 1);
+
+        $sql = "update `".$this->get_table_name()."` {$set_string}   where `".$this->get_pk_id()."`=?";
+        RSF::get_instance()->debug($sql,'sql');
+        $stmt = $this->get_master_pdo()->prepare($sql);
+        $set_datas = array_merge($set_data,array($id));
+        return $stmt->execute($set_datas);
+    }
+
     public function update_by_where($where, $data)
     {
-        if (empty($data)) {
+        if (empty($data) || !is_array($data)) {
             return false;
         }
 
