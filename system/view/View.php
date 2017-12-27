@@ -63,7 +63,40 @@ abstract class View
             return $path;
         }
 
+        $path = cf_build_path($name, $view);
+        $path = SYS_PATH . $path . "." . $type;
 
+        if(file_exists($path)){
+            return $path;
+        }
+
+        global $INCLUDE_PATH;
+        if($INCLUDE_PATH) {
+            foreach($INCLUDE_PATH as $path_root) {
+                $path  = cf_build_path($name, $view);
+                $path = $path_root . $path.'.'.$type;
+                if(file_exists($path)) {
+                    return $path;
+                }
+            }
+        }
+        return false;
+    }
+
+    public function set_data($key, $value)
+    {
+        $this->data[$key] = $value;
+    }
+
+    public function get_class_name()
+    {
+        $called = get_called_class();
+        return substr($called, 0, -4);
+    }
+
+    public function build_css_url()
+    {
+        DPS::get_instance();
     }
 
 }
