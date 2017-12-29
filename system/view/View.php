@@ -96,7 +96,13 @@ abstract class View
 
     public function build_css_url()
     {
-        DPS::get_instance();
+        $request = DPS::get_instance()->get_request();
+        if($request->is_https()){
+            $source_url = ConfigTool::get_instance()->get_config("source_https");
+        }else{
+            $source_url = ConfigTool::get_instance()->get_config("source");
+        }
+
     }
 
 }
