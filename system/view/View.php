@@ -97,12 +97,39 @@ abstract class View
     public function build_css_url()
     {
         $request = DPS::get_instance()->get_request();
-        if($request->is_https()){
-            $source_url = ConfigTool::get_instance()->get_config("source_https");
-        }else{
-            $source_url = ConfigTool::get_instance()->get_config("source");
+        $source_url = ConfigTool::get_instance()->get_config("source");
+
+        $location = ConfigTool::get_instance()->get_config("location");
+
+        $class_name = $this->get_class_name();
+
+        if(strpos($class_name, "\\") !== false){
+            $class_name = str_replace("\\", "/", $class_name);
         }
 
+        $real_url = $source_url.$location."/resource/css/".$class_name.".css";
+
+        return $real_url."?v=".VERSION."&".($request->is_https()?"https":"");
+    }
+
+
+    public function build_js_url ()
+    {
+        $source_url = ConfigTool::get_instance()->get_config("source");
+
+
+        $location = ConfigTool::get_instance()->get_config("location");
+
+        $class_name = $this->get_class_name();
+
+        if(strpos($class_name,'\\')!==false) {
+            $class_name = str_replace('\\','/',$class_name);
+        }
+
+        $real_url = $source_url.$location.'/resource/js/'.$class_name.'.js';
+        $request = DPS::get_instance()->get_request();
+        //防止 cdn将https和http缓存成同一个请求
+        return $real_url.'?v='.VERSION.'&'.($request->is_https()?'https':'');
     }
 
 }
