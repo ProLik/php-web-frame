@@ -128,8 +128,107 @@ abstract class View
 
         $real_url = $source_url.$location.'/resource/js/'.$class_name.'.js';
         $request = DPS::get_instance()->get_request();
-        //��ֹ cdn��https��http�����ͬһ������
         return $real_url.'?v='.VERSION.'&'.($request->is_https()?'https':'');
     }
 
+    public static function get_css_list()
+    {
+        return array();
+    }
+
+    public static function get_js_list() {
+        return array(
+            'RSF'
+        );
+    }
+
+    public static function get_static_js_list() {
+        return array(
+
+        );
+    }
+    public static function get_plugin() {
+        return array();
+    }
+
+    public function get_css_header()
+    {
+        $called = get_called_class();
+        $css_list = $called::get_css_list();
+        $tag = "";
+        $last_modify = 0;
+        foreach ($css_list as $v){
+            $real_path = self::get_real_path($v,'view','css');
+            //取得文件修改时间
+            $last_modify_time = filemtime($real_path);
+            $tag .= $v . $last_modify_time . "view";
+            $last_modify = max($last_modify, $last_modify_time);
+        }
+
+        $plugin_list = $called::get_plugin();
+        foreach ($plugin_list as $key => $plugin){
+            $real_name = $plugin.'Plugin';
+            $css_list = $real_name::get_css_list();
+            foreach ($css_list as $v){
+                $real_path = self::get_real_path($v,'plugin','css');
+                $last_modify_time = filemtime($real_path);
+                $tag .= $v.$last_modify_time.'view';
+                $last_modify = max($last_modify,$last_modify_time);
+            }
+        }
+        $request = DPS::get_instance()->get_request();
+        $tag .= serialize($request->get_params());
+
+        $tag  = md5(($request->is_https()?'https':'').$tag.VERSION.'css');
+        $header = array('etag'=>$tag,'last_mod'=>$last_modify);
+        return $header;
+    }
+
+    public function get_css_content($header, $host = "")
+    {
+        $cache_key = $host . $header["etag"];
+        $content = "";
+        if(ConfigTool::get_instance()->get_config("cache")){
+            $cache = DBTool::get_instance()->get_cache();
+            $cache_content = $cache->get($cache_key);
+            if($cache_content){
+                DPS::get_instance()->get_response()->header("from mem", 1);
+                $content = $cache_content;
+                echo $content;
+            }
+        }
+
+        if(!$content){
+            $called = get_called_class();
+            $css_list = $called::get_css_list();
+
+            foreach ($css_list as $v){
+                $this->begain_script_block();
+                $this->include_template($v, "view", "css");
+                $this->end_script_block();
+            }
+        }
+    }
+
+
+
+
+
+    public function auto_make_css_size($content, $screen_width, $psd_width)
+    {
+        //执行一个正则表达式搜索并且使用一个回调进行替换
+        return preg_replace_callback('/\/\*real\{([\-\d]+)\}\*\//',function($matches) use($screen_width,$psd_width) {
+            return $this->get_real_px($matches[1],$screen_width,$psd_width).'px';
+        },$content);
+    }
+
+    public static function get_real_px($px, $screen_width, $psd_width)
+    {
+        if( $px == '1') {
+            return $px;
+        }
+
+        $psd_width = $psd_width ? $psd_width : 720;
+        return  round($screen_width/ $psd_width*$px);
+    }
 }
