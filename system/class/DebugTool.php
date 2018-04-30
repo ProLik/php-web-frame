@@ -11,7 +11,7 @@ class DebugTool
     private $debug_list = array();
     public $debug = true;
 
-    public static $instance;
+    private static $instance;
 
     public static function get_instance(){
         if(!self::$instance){

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <title><?= $this->get_title() ?></title>
+    <?php if ($this->get_description()) : ?>
+        <meta name="Description" content="<?= $this->get_description() ?>"/>
+    <?php endif; ?>
+    <?php if ($this->get_keywords()) : ?>
+        <meta name="Keywords" content="<?= $this->get_keywords() ?>"/>
+    <?php endif; ?>
+
+    <?php
+    $this->include_template('Rotated');
+    ?>
+</head>
+<body>
+<div class="main clearfix">
+    <div class="m-content">
+        <div class="m-content-m">
+            <?php $this->build_content(); ?>
+        </div>
+    </div>
+    <?php new Demo_FooterPlugin(); ?>
+</div>
+
+<script type="text/javascript" src="<?= $this->build_js_url() ?>"></script>
+<script>
+    var DemoFrame = new DemoFrame();
+    DemoFrame.init();
+</script>
+<?php $this->write_script_blocks(); ?>
+</body>
+</html>

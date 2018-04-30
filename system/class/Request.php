@@ -101,6 +101,10 @@ class Request
         $this->attr[$key] = $value;
     }
 
+    public function set_attribute($key,$value) {
+        $this->attr[$key] = $value;
+    }
+
     public function get_attribute($key){
         return $this->attr[$key];
     }

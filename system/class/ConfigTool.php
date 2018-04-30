@@ -8,6 +8,8 @@
 
 class ConfigTool
 {
+    private static $instance;
+
     public static function get_instance(){
         if(!self::$instance){
             self::$instance = new ConfigTool();

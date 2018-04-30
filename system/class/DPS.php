@@ -12,7 +12,7 @@ class DPS
     public $request;
     public $response;
     public $debug;
-    public static $instance;
+    private static $instance;
 
     public function __construct()
     {
@@ -90,19 +90,21 @@ class DPS
         //特定的拦截器
         $specialed_interceptor = $interceptor_config['specified'];
         $intercepts = $specialed_interceptor[$controller];
-        foreach ($intercepts as $interceptor){
-            $interceptor_class = $interceptor . "Interceptor";
-            cf_require_interceptor($interceptor_class);
-            if(class_exists($interceptor_class)){
-                DebugTool::get_instance()->debug("run interceptor:" . $interceptor);
-                $interceptor_obj = new $interceptor_class;
-                if($interceptor_obj->go_next()){
-                    continue;
+        if($intercepts != null){
+            foreach ($intercepts as $interceptor){
+                $interceptor_class = $interceptor . "Interceptor";
+                cf_require_interceptor($interceptor_class);
+                if(class_exists($interceptor_class)){
+                    DebugTool::get_instance()->debug("run interceptor:" . $interceptor);
+                    $interceptor_obj = new $interceptor_class;
+                    if($interceptor_obj->go_next()){
+                        continue;
+                    }else{
+                        $interceptor_obj->broken();
+                    }
                 }else{
-                    $interceptor_obj->broken();
+                    continue;
                 }
-            }else{
-                continue;
             }
         }
         DebugTool::get_instance()->debug($controller);
@@ -137,7 +139,7 @@ class DPS
 
     private function get_controller($url)
     {
-        $router = $this->get_config("router", "router");
+        $router = ConfigTool::get_instance()->get_config("router", "router");
 
         foreach ($router as $k=>$v){
             foreach ($v as $reg){

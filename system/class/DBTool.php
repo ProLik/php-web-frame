@@ -19,7 +19,7 @@ class DBTool
     const CACHE_TYPE_REDIS = 2;
     const CACHE_TYPE_REDIS_CLUSTER = 3;//redis 集群
 
-    public static $instance;
+    private static $instance;
 
     public function __construct()
     {
